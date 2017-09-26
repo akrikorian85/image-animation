@@ -45,7 +45,9 @@
     });
 ## How to use
 
-Pass an object of options to the constructor.
+Pass a CSS selector and an object to the constructor.
+
+The animation's container will be appended inside the selected element.
 
 The object should have `width`, `height`, and `frames` properties. Width and height should be set to the desired width and height of the container of images.
 
@@ -57,10 +59,12 @@ Each frame's properties should be set:
 ### Some notes:
 
   `animationType` can be set to `reveal`, `fadeIn`, or `none`.
-  `imagesrc` is the source path to the image. This should be the path from the HTML file that this library is being used on
+  `imagesrc` is the source path to the image. This should be the path from the HTML file that this library is being used on.
   `position` is an object that has an `x` and `y` property. This is to set the absolute positioning within the containing element.
   Retina images can be used. Just cut the image at double the desired width and height.
 
 ### Dependencies
 
 jQuery 1.0+
+
+## To Do

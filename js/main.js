@@ -67,7 +67,7 @@ $(function () {
     ]
   };
 
-  var a = new Animation(options);
+  var a = new Animation('body', options);
 
   a.init();
 });

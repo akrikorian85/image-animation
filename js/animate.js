@@ -1,11 +1,10 @@
-var Animation = function (options) {
+var Animation = function (selector, options) {
   var frames = [];
   var index = 0;
 
   // generates and appends the HTML
   function appendHTML() {
     var containerEl = document.createElement('DIV');
-    console.dir(frames);
 
     $(containerEl).css({
       'position': 'relative',
@@ -21,9 +20,10 @@ var Animation = function (options) {
       $(containerEl).append(div);
     });
 
-    $('body').append(containerEl);
+    $(selector).append(containerEl);
   }
 
+  // helper function to set the id of the divs
   function guid() {
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000)
@@ -35,6 +35,7 @@ var Animation = function (options) {
   }
 
   // returns an animation function to run depending on the type param
+  // the returned function runs an animation and then runs the next frame's animation as a callback
   var getAnimationFunc = function (type, duration) {
     switch (type) {
       case 'fadeIn':
@@ -88,7 +89,7 @@ var Animation = function (options) {
   };
 
   return {
-    // initializer.
+    // initializer
     // loads the image first, then pushes the frame to the frames array
     'init': function () {
       var loaded = 0,
@@ -112,7 +113,6 @@ var Animation = function (options) {
           loaded++;
 
           if (loaded === totalImages) {
-            console.log('starting Animation');
             appendHTML();
             startAnimation();
           } else {
