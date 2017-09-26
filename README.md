@@ -60,3 +60,7 @@ Each frame's properties should be set:
   `imagesrc` is the source path to the image. This should be the path from the HTML file that this library is being used on
   `position` is an object that has an `x` and `y` property. This is to set the absolute positioning within the containing element.
   Retina images can be used. Just cut the image at double the desired width and height.
+
+### Dependencies
+
+jQuery 1.0+
