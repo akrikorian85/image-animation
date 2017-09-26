@@ -1,8 +1,6 @@
 var Animation = function (options) {
   var frames = [];
   var index = 0;
-  var containerWidth = options.width;
-  var containerHeight = options.height;
 
   // generates and appends the HTML
   function appendHTML() {
