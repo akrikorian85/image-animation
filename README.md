@@ -1,0 +1,1 @@
+# Animated image JS library
