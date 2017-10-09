@@ -6,6 +6,10 @@ var Animation = function (selector, options) {
   function appendHTML() {
     var containerEl = document.createElement('DIV');
 
+    if (typeof options.id === 'string' && options.id !== '') {
+      containerEl.id = options.id;
+    }
+
     $(containerEl).css({
       'position': 'relative',
       'width': options.width,

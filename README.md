@@ -4,6 +4,7 @@
       var options = {
         'width': 813,
         'height': 614,
+        'id': 'some-id',
         'frames': [
           {
             'imagesrc': 'images/chart-bg.jpg',
@@ -45,11 +46,11 @@
     });
 ## How to use
 
-Pass a CSS selector and an object to the constructor.
+Pass a CSS selector and an object to the function.
 
 The animation's container will be appended inside the selected element.
 
-The object should have `width`, `height`, and `frames` properties. Width and height should be set to the desired width and height of the container of images.
+The object should have `width`, `height`, and `frames` and optional `id` properties. Width and height should be set to the desired width and height of the container of images.
 
 The `frames` property should be an array of objects. Each frame in the frames array is an object with it's own properties and is treated as one animated part of the of the whole animation. Frames are used in the order they are set in the array. `frames[i]` starts and then finishes it's animation, then `frames[i+1]` animation is called and finished, all the way up to ...`frames[n]`.
 
@@ -66,5 +67,11 @@ Each frame's properties should be set:
 ### Dependencies
 
 jQuery 1.0+
+
+### Changelog
+
+1.0.1 - 10-09-2017
+#### Added
+- set an id on the container element for styling
 
 ## To Do

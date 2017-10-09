@@ -2,6 +2,7 @@ $(function () {
   var options = {
     'width': 813,
     'height': 614,
+    'id': 'some-id',
     'frames': [
       {
         'imagesrc': 'images/chart-bg.jpg',
