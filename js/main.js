@@ -3,8 +3,9 @@ $(function () {
     'width': 813,
     'height': 614,
     'id': 'some-id',
+    'click': true,
     'frames': [
-      {
+      new Frame({
         'imagesrc': 'images/chart-bg.jpg',
         'position': {
           x: 0,
@@ -14,7 +15,8 @@ $(function () {
         'height': 614,
         'animationType': 'none',
         'duration': 1000
-      }, {
+      }),
+      new Frame({
         'imagesrc': 'images/gray-line-1.png',
         'position': {
           x: 164,
@@ -24,7 +26,8 @@ $(function () {
         'height': 212,
         'animationType': 'reveal',
         'duration': 1000
-      }, {
+      }),
+      new Frame({
         'imagesrc': 'images/orange-line-1.png',
         'position': {
           x: 164,
@@ -34,7 +37,8 @@ $(function () {
         'height': 125,
         'animationType': 'reveal',
         'duration': 1000
-      }, {
+      }),
+      new Frame({
         'imagesrc': 'images/2-lines.png',
         'position': {
           x: 385,
@@ -44,7 +48,8 @@ $(function () {
         'height': 153,
         'animationType': 'reveal',
         'duration': 1000
-      }, {
+      }),
+      new Frame({
         'imagesrc': 'images/gray-explanation.png',
         'position': {
           x: 170,
@@ -54,7 +59,8 @@ $(function () {
         'height': 100,
         'animationType': 'fadeIn',
         'duration': 1000
-      }, {
+      }),
+      new Frame({
         'imagesrc': 'images/orange-explanation.png',
         'position': {
           x: 634,
@@ -64,11 +70,12 @@ $(function () {
         'height': 100,
         'animationType': 'fadeIn',
         'duration': 1000
-      }
+      })
     ]
   };
 
   var a = new Animation('body', options);
 
   a.init();
+
 });

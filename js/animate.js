@@ -1,33 +1,7 @@
-var Animation = function (selector, options) {
-  var frames = [];
-  var index = 0;
+var Frame = function (options) {
+  var id = guid();
 
-  // generates and appends the HTML
-  function appendHTML() {
-    var containerEl = document.createElement('DIV');
-
-    if (typeof options.id === 'string' && options.id !== '') {
-      containerEl.id = options.id;
-    }
-
-    $(containerEl).css({
-      'position': 'relative',
-      'width': options.width,
-      'height': options.height
-    });
-
-    frames.forEach(function (frame) {
-      var div = document.createElement('DIV');
-
-      div.id = frame.id;
-      $(div).css(frame.cssProps);
-      $(containerEl).append(div);
-    });
-
-    $(selector).append(containerEl);
-  }
-
-  // helper function to set the id of the divs
+  // helper function to set the id of each image
   function guid() {
     function s4() {
       return Math.floor((1 + Math.random()) * 0x10000)
@@ -37,61 +11,122 @@ var Animation = function (selector, options) {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
   }
-
-  // returns an animation function to run depending on the type param
-  // the returned function runs an animation and then runs the next frame's animation as a callback
-  var getAnimationFunc = function (type, duration) {
-    switch (type) {
+  function setAnimationFunc() {
+    switch (options.animationType) {
       case 'fadeIn':
-        return function (frame) {
-          $('div#' + frame.id).fadeIn(duration, function () {startAnimation(frames[index++])});
+        return function (cb) {
+          $('div#' + id).fadeIn(options.duration, function () {
+            if (typeof cb === 'function') {
+              cb();
+            }
+          });
         };
       case 'reveal':
-        return function (frame) {
-          $('div#' + frame.id).show();
-          $('div#' + frame.id).animate({'width': frame.initialWidth}, duration, function () {startAnimation(frames[index++])});
+        return function (cb) {
+          $('div#' + id).show();
+          $('div#' + id).animate({'width': options.width}, options.duration, function () {
+            if (typeof cb === 'function') {
+              cb();
+            }
+          });
         };
-      default: return function (frame) {
-        $('div#' + frame.id).show(0, function () {startAnimation(frames[index++])});
+      default: return function (cb) {
+        $('div#' + id).show(0, function () {
+          if (typeof cb === 'function') {
+            cb();
+          }
+        });
       }
     }
   }
+  return {
+    'imagesrc': options.imagesrc,
+    'getCssProps': function (zIndex) {
+      var props = {
+        'background-image': 'url(' + options.imagesrc + ')',
+        'background-size': options.width + 'px ' + options.height + 'px',
+        'background-repeat': 'no-repeat',
+        'position': 'absolute',
+        'width': options.width,
+        'height': options.height,
+        'top': options.position.y,
+        'left': options.position.x,
+        'zIndex': zIndex,
+        'display': 'none'
+      };
 
-  var startAnimation = function () {
-    if (frames[index]) {
-      frames[index].animation(frames[index])
-    }
+      switch (options.animationType) {
+        case 'fadeIn':
+          break;
+        case 'reveal':
+          props['width'] = 0;
+          break;
+        default:
+      }
+
+      return props;
+    },
+    'getId': function () {
+      return id;
+    },
+    'animation': setAnimationFunc()
+  };
+}
+
+var Animation = function (selector, options) {
+  var index = 0;
+
+  // generates and appends the HTML
+  function appendHTML() {
+    var containerEl = document.createElement('DIV');
+
+    containerEl.id = options.id;
+
+    $(containerEl).css({
+      'position': 'relative',
+      'width': options.width,
+      'height': options.height
+    });
+
+    options.frames.forEach(function (frame, index) {
+      var div = document.createElement('DIV');
+
+      div.id = frame.getId();
+      $(div).css(frame.getCssProps(index));
+      $(containerEl).append(div);
+    });
+
+    $(selector).append(containerEl);
   }
 
-  // returns CSS properties object depending on the animation
-  // frameNum is just to set the z-index. Each frame has a higher z-index than
-  // the frame preceding it
-  var getInitialCssProps = function (frame, frameNum) {
-    var props = {
-      'background-image': 'url(' + frame.imagesrc + ')',
-      'background-size': frame.width + 'px ' + frame.height + 'px',
-      'background-repeat': 'no-repeat',
-      'position': 'absolute',
-      'width': frame.width,
-      'height': frame.height,
-      'top': frame.position.y,
-      'left': frame.position.x,
-      'zIndex': frameNum + 1,
-      'display': 'none'
-    };
-
-    switch (frame.animationType) {
-      case 'fadeIn':
-        break;
-      case 'reveal':
-        props['width'] = 0;
-        break;
-      default:
+  var startAnimation = function () {
+    if (!options.frames[index]) {
+      return;
     }
+    options.frames[index].animation(function () {
+      startAnimation(options.frames[index++]);
+    });
+  }
+  var clickAnimation = function () {
+    var busy = false;
 
-    return props;
-  };
+    $('#' + options.id).on('click', function (e) {
+      e.preventDefault();
 
+      if (busy) {
+        return;
+      }
+
+      if (options.frames[index]) {
+        console.log(index);
+        busy = true;
+        options.frames[index].animation(function () {
+          index++;
+          busy = false;
+        });
+      }
+    });
+  }
   return {
     // initializer
     // loads the image first, then pushes the frame to the frames array
@@ -104,21 +139,15 @@ var Animation = function (selector, options) {
 
         // preload images
         image.addEventListener('load', function () {
-          // add options
-          frames.push({
-            'id': guid(),
-            'src': options.frames[loaded].imagesrc,
-            'duration': options.frames[loaded].duration,
-            'animation': getAnimationFunc(options.frames[loaded].animationType, options.frames[loaded].duration),
-            'cssProps': getInitialCssProps(options.frames[loaded], loaded),
-            'initialWidth': options.frames[loaded].width
-          });
-
           loaded++;
 
           if (loaded === totalImages) {
             appendHTML();
-            startAnimation();
+            if (options.click) {
+              clickAnimation();
+            } else {
+              startAnimation();
+            }
           } else {
             console.log(loaded + '/' + totalImages);
           }
