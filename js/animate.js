@@ -1,4 +1,4 @@
-var Frame = function (options) {
+var Animation = function (options) {
   var id = guid();
 
   // helper function to set the id of each image
@@ -12,7 +12,7 @@ var Frame = function (options) {
       s4() + '-' + s4() + s4() + s4();
   }
   function setAnimationFunc() {
-    switch (options.animationType) {
+    switch (options.type) {
       case 'fadeIn':
         return function (cb) {
           $('div#' + id).fadeIn(options.duration, function () {
@@ -55,7 +55,7 @@ var Frame = function (options) {
         'display': 'none'
       };
 
-      switch (options.animationType) {
+      switch (options.type) {
         case 'fadeIn':
           break;
         case 'reveal':
@@ -73,7 +73,7 @@ var Frame = function (options) {
   };
 }
 
-var Animation = function (selector, options) {
+var AnimationLoader = function (selector, options) {
   var index = 0;
 
   // generates and appends the HTML
@@ -88,11 +88,12 @@ var Animation = function (selector, options) {
       'height': options.height
     });
 
-    options.frames.forEach(function (frame, index) {
-      var div = document.createElement('DIV');
+    options.animations.forEach(function (animation, index) {
+      var div = document.createElement('DIV'),
+        zIndex = index;
 
-      div.id = frame.getId();
-      $(div).css(frame.getCssProps(index));
+      div.id = animation.getId();
+      $(div).css(animation.getCssProps(zIndex));
       $(containerEl).append(div);
     });
 
@@ -100,11 +101,11 @@ var Animation = function (selector, options) {
   }
 
   var startAnimation = function () {
-    if (!options.frames[index]) {
+    if (!options.animations[index]) {
       return;
     }
-    options.frames[index].animation(function () {
-      startAnimation(options.frames[index++]);
+    options.animations[index].animation(function () {
+      startAnimation(options.animations[index++]);
     });
   }
   var clickAnimation = function () {
@@ -114,13 +115,14 @@ var Animation = function (selector, options) {
       e.preventDefault();
 
       if (busy) {
+        // console.log('busy...');
         return;
       }
 
-      if (options.frames[index]) {
-        console.log(index);
+      if (options.animations[index]) {
+        // console.log(index);
         busy = true;
-        options.frames[index].animation(function () {
+        options.animations[index].animation(function () {
           index++;
           busy = false;
         });
@@ -129,10 +131,9 @@ var Animation = function (selector, options) {
   }
   return {
     // initializer
-    // loads the image first, then pushes the frame to the frames array
     'init': function () {
       var loaded = 0,
-          totalImages = options.frames.length;
+          totalImages = options.animations.length;
 
       for (var i = 0; i < totalImages; i++) {
         var image = new Image();
@@ -149,11 +150,11 @@ var Animation = function (selector, options) {
               startAnimation();
             }
           } else {
-            console.log(loaded + '/' + totalImages);
+            // console.log(loaded + '/' + totalImages);
           }
         });
 
-        image.src = options.frames[i].imagesrc;
+        image.src = options.animations[i].imagesrc;
       }
     }
   };

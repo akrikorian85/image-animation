@@ -4,8 +4,8 @@ $(function () {
     'height': 614,
     'id': 'some-id',
     'click': true,
-    'frames': [
-      new Frame({
+    'animations': [
+      new Animation({
         'imagesrc': 'images/chart-bg.jpg',
         'position': {
           x: 0,
@@ -13,10 +13,9 @@ $(function () {
         },
         'width': 813,
         'height': 614,
-        'animationType': 'none',
         'duration': 1000
       }),
-      new Frame({
+      new Animation({
         'imagesrc': 'images/gray-line-1.png',
         'position': {
           x: 164,
@@ -24,10 +23,10 @@ $(function () {
         },
         'width': 221,
         'height': 212,
-        'animationType': 'reveal',
+        'type': 'reveal',
         'duration': 1000
       }),
-      new Frame({
+      new Animation({
         'imagesrc': 'images/orange-line-1.png',
         'position': {
           x: 164,
@@ -35,10 +34,10 @@ $(function () {
         },
         'width': 221,
         'height': 125,
-        'animationType': 'reveal',
+        'type': 'reveal',
         'duration': 1000
       }),
-      new Frame({
+      new Animation({
         'imagesrc': 'images/2-lines.png',
         'position': {
           x: 385,
@@ -46,10 +45,10 @@ $(function () {
         },
         'width': 244,
         'height': 153,
-        'animationType': 'reveal',
+        'type': 'reveal',
         'duration': 1000
       }),
-      new Frame({
+      new Animation({
         'imagesrc': 'images/gray-explanation.png',
         'position': {
           x: 170,
@@ -57,10 +56,10 @@ $(function () {
         },
         'width': 179,
         'height': 100,
-        'animationType': 'fadeIn',
+        'type': 'fadeIn',
         'duration': 1000
       }),
-      new Frame({
+      new Animation({
         'imagesrc': 'images/orange-explanation.png',
         'position': {
           x: 634,
@@ -68,13 +67,13 @@ $(function () {
         },
         'width': 179,
         'height': 100,
-        'animationType': 'fadeIn',
+        'type': 'fadeIn',
         'duration': 1000
       })
     ]
   };
 
-  var a = new Animation('body', options);
+  var a = new AnimationLoader('body', options);
 
   a.init();
 
