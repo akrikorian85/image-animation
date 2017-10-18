@@ -69,7 +69,8 @@ var Animation = function (options) {
     'getId': function () {
       return id;
     },
-    'animation': setAnimationFunc()
+    'animation': setAnimationFunc(),
+    'click': !!options.click
   };
 }
 
@@ -104,10 +105,30 @@ var AnimationLoader = function (selector, options) {
     if (!options.animations[index]) {
       return;
     }
-    options.animations[index].animation(function () {
-      startAnimation(options.animations[index++]);
-    });
+
+    // wait for click?
+    if (options.animations[index].click) {
+      $('#' + options.id).on('click', function () {
+        options.animations[index].animation(function () {
+          startAnimation(options.animations[index++]);
+        });
+        $('#' + options.id).off('click');
+      });
+    }
+    else {
+      options.animations[index].animation(function () {
+        startAnimation(options.animations[index++]);
+      });
+      // runAnimationQueue(options.animations[index].animation, function () {
+      //   runAnimationQueue(options.animations[index].animation);
+      // });
+    }
   }
+  // function runAnimationQueue(animationFunc, cb) {
+  //   if (typeof cb === 'function') {
+  //     animationFunc(cb)
+  //   }
+  // }
   var clickAnimation = function () {
     var busy = false;
 
@@ -144,11 +165,7 @@ var AnimationLoader = function (selector, options) {
 
           if (loaded === totalImages) {
             appendHTML();
-            if (options.click) {
-              clickAnimation();
-            } else {
-              startAnimation();
-            }
+            startAnimation();
           } else {
             // console.log(loaded + '/' + totalImages);
           }
@@ -156,6 +173,7 @@ var AnimationLoader = function (selector, options) {
 
         image.src = options.animations[i].imagesrc;
       }
+      console.dir(options);
     }
   };
 };

@@ -3,7 +3,6 @@ $(function () {
     'width': 813,
     'height': 614,
     'id': 'some-id',
-    'click': true,
     'animations': [
       new Animation({
         'imagesrc': 'images/chart-bg.jpg',
@@ -13,7 +12,8 @@ $(function () {
         },
         'width': 813,
         'height': 614,
-        'duration': 1000
+        'duration': 500,
+        // 'click': true
       }),
       new Animation({
         'imagesrc': 'images/gray-line-1.png',
@@ -24,29 +24,8 @@ $(function () {
         'width': 221,
         'height': 212,
         'type': 'reveal',
-        'duration': 1000
-      }),
-      new Animation({
-        'imagesrc': 'images/orange-line-1.png',
-        'position': {
-          x: 164,
-          y: 90
-        },
-        'width': 221,
-        'height': 125,
-        'type': 'reveal',
-        'duration': 1000
-      }),
-      new Animation({
-        'imagesrc': 'images/2-lines.png',
-        'position': {
-          x: 385,
-          y: 214
-        },
-        'width': 244,
-        'height': 153,
-        'type': 'reveal',
-        'duration': 1000
+        'duration': 500,
+        'click': true
       }),
       new Animation({
         'imagesrc': 'images/gray-explanation.png',
@@ -57,7 +36,20 @@ $(function () {
         'width': 179,
         'height': 100,
         'type': 'fadeIn',
-        'duration': 1000
+        'duration': 500,
+        'click': true
+      }),
+      new Animation({
+        'imagesrc': 'images/orange-line-1.png',
+        'position': {
+          x: 164,
+          y: 90
+        },
+        'width': 221,
+        'height': 125,
+        'type': 'reveal',
+        'duration': 500,
+        'click': true
       }),
       new Animation({
         'imagesrc': 'images/orange-explanation.png',
@@ -68,7 +60,20 @@ $(function () {
         'width': 179,
         'height': 100,
         'type': 'fadeIn',
-        'duration': 1000
+        'duration': 500,
+        'click': true
+      }),
+      new Animation({
+        'imagesrc': 'images/2-lines.png',
+        'position': {
+          x: 385,
+          y: 214
+        },
+        'width': 244,
+        'height': 153,
+        'type': 'reveal',
+        'duration': 500,
+        'click': true
       })
     ]
   };
@@ -76,5 +81,8 @@ $(function () {
   var a = new AnimationLoader('body', options);
 
   a.init();
+  $('body').on('click', function (e) {
+    console.dir(e.target);
+  });
 
 });
