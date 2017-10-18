@@ -109,26 +109,21 @@ var AnimationLoader = function (selector, options) {
     // wait for click?
     if (options.animations[index].click) {
       $('#' + options.id).on('click', function () {
+        // remove click handler immediately, then run animation
+        $('#' + options.id).off('click');
         options.animations[index].animation(function () {
+          // runs next animation when the current one ends
           startAnimation(options.animations[index++]);
         });
-        $('#' + options.id).off('click');
       });
     }
     else {
       options.animations[index].animation(function () {
         startAnimation(options.animations[index++]);
       });
-      // runAnimationQueue(options.animations[index].animation, function () {
-      //   runAnimationQueue(options.animations[index].animation);
-      // });
     }
   }
-  // function runAnimationQueue(animationFunc, cb) {
-  //   if (typeof cb === 'function') {
-  //     animationFunc(cb)
-  //   }
-  // }
+
   var clickAnimation = function () {
     var busy = false;
 

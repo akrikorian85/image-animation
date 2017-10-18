@@ -12,8 +12,7 @@ $(function () {
         },
         'width': 813,
         'height': 614,
-        'duration': 500,
-        // 'click': true
+        'duration': 500
       }),
       new Animation({
         'imagesrc': 'images/gray-line-1.png',
@@ -24,8 +23,7 @@ $(function () {
         'width': 221,
         'height': 212,
         'type': 'reveal',
-        'duration': 500,
-        'click': true
+        'duration': 500
       }),
       new Animation({
         'imagesrc': 'images/gray-explanation.png',
@@ -36,8 +34,7 @@ $(function () {
         'width': 179,
         'height': 100,
         'type': 'fadeIn',
-        'duration': 500,
-        'click': true
+        'duration': 500
       }),
       new Animation({
         'imagesrc': 'images/orange-line-1.png',
@@ -60,8 +57,7 @@ $(function () {
         'width': 179,
         'height': 100,
         'type': 'fadeIn',
-        'duration': 500,
-        'click': true
+        'duration': 500
       }),
       new Animation({
         'imagesrc': 'images/2-lines.png',
@@ -81,8 +77,4 @@ $(function () {
   var a = new AnimationLoader('body', options);
 
   a.init();
-  $('body').on('click', function (e) {
-    console.dir(e.target);
-  });
-
 });
