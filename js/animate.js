@@ -106,7 +106,7 @@ var AnimationLoader = function (selector, options) {
       return;
     }
 
-    // wait for click?
+    // wait for click or keep running?
     if (options.animations[index].click) {
       $('#' + options.id).on('click', function () {
         // remove click handler immediately, then run animation
@@ -122,7 +122,7 @@ var AnimationLoader = function (selector, options) {
         startAnimation(options.animations[index++]);
       });
     }
-  }
+  };
 
   var clickAnimation = function () {
     var busy = false;
@@ -144,7 +144,7 @@ var AnimationLoader = function (selector, options) {
         });
       }
     });
-  }
+  };
   return {
     // initializer
     'init': function () {
