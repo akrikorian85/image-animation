@@ -70,7 +70,8 @@ var Animation = function (options) {
       return id;
     },
     'animation': setAnimationFunc(),
-    'click': !!options.click
+    'click': !!options.click,
+    'delay': (typeof options.delay === 'number') ? options.delay : 0
   };
 }
 
@@ -113,14 +114,20 @@ var AnimationLoader = function (selector, options) {
         $('#' + options.id).off('click');
         options.animations[index].animation(function () {
           // runs next animation when the current one ends
-          startAnimation(options.animations[index++]);
+          // console.log('done');
+          options.animations[index++];
+          startAnimation();
         });
       });
     }
     else {
-      options.animations[index].animation(function () {
-        startAnimation(options.animations[index++]);
-      });
+      setTimeout(function () {
+        options.animations[index].animation(function () {
+          // console.log('done');
+          options.animations[index++];
+          startAnimation();
+        });
+      }, options.animations[index].delay);
     }
   };
 

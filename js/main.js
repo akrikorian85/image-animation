@@ -34,7 +34,8 @@ $(function () {
         'width': 179,
         'height': 100,
         'type': 'fadeIn',
-        'duration': 500
+        'duration': 500,
+        delay: 2000
       }),
       new Animation({
         'imagesrc': 'images/orange-line-1.png',
@@ -57,7 +58,8 @@ $(function () {
         'width': 179,
         'height': 100,
         'type': 'fadeIn',
-        'duration': 500
+        'duration': 500,
+        delay: 2000
       }),
       new Animation({
         'imagesrc': 'images/2-lines.png',
