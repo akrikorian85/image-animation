@@ -14,18 +14,28 @@ var Animation = function (animArr) {
 
     switch (animation.type) {
       case 'fadeIn':
-        func = function (id) {
+        func = function (id, cb) {
           $('div#' + id).fadeIn(animation.duration);
+          if (typeof cb === 'function') {
+            cb();
+          }
         };
         break;
       case 'reveal':
-        func = function (id) {
+        func = function (id, cb) {
           $('div#' + id).show();
-          $('div#' + id).animate({'width': animation.width}, animation.duration);
+          $('div#' + id).animate({'width': animation.width}, animation.duration, function () {
+            if (typeof cb === 'function') {
+              cb();
+            }
+          });
         };
         break;
-      default: func = function (id) {
+      default: func = function (id, cb) {
         $('div#' + id).show(0);
+        if (typeof cb === 'function') {
+          cb();
+        }
       };
     }
 
@@ -109,7 +119,8 @@ var Animation = function (animArr) {
 }
 
 var AnimationLoader = function (selector, options) {
-  var index = 0;
+  var index = 0,
+    listenerEl;
 
   // generates and appends the HTML
 
@@ -143,11 +154,14 @@ var AnimationLoader = function (selector, options) {
 
         image.src = images[i];
       }
+
     },
     'appendHTML': function () {
       var containerEl = document.createElement('DIV');
 
       containerEl.id = options.id;
+
+      listeningEl = containerEl;
 
       $(containerEl).css({
         'position': 'relative',
@@ -171,6 +185,10 @@ var AnimationLoader = function (selector, options) {
       $(selector).append(containerEl);
     },
     'startAnimation': function () {
+      var event = new Event('animationdone'),
+        currentSet = options.animations[0].length,
+        currentSetOfAnimationsComplete = 0;
+
       // if (!options.animations[index]) {
       //   return;
       // }
@@ -198,7 +216,15 @@ var AnimationLoader = function (selector, options) {
       //   }, options.animations[index].delay);
       // }
       console.dir(options);
-      console.dir($('.animation-group-1'));
+      // run first set of animations - options.animations[0].forEach()
+      // each animation in the set should fire an event like animationdone
+      // keep a counter of how many time animationdone was fired. If it equals the number of animations in the set,
+      // run the next set
+      listenerEl.addEventListener('animationdone', function () {
+        if (currentSetOfAnimationsComplete === currentSet) {
+          // currentSet = options.animations
+        }
+      })
     },
     'clickAnimation': function () {
       var busy = false;
