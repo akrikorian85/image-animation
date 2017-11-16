@@ -1,4 +1,4 @@
-var Animation = function (animArr) {
+var Animation = function (options, animArr) {
   // helper function to set the id of each image
   function guid() {
     function s4() {
@@ -15,10 +15,11 @@ var Animation = function (animArr) {
     switch (animation.type) {
       case 'fadeIn':
         func = function (id, cb) {
-          $('div#' + id).fadeIn(animation.duration);
-          if (typeof cb === 'function') {
-            cb();
-          }
+          $('div#' + id).fadeIn(animation.duration, function () {
+            if (typeof cb === 'function') {
+              cb();
+            }
+          });
         };
         break;
       case 'reveal':
@@ -32,10 +33,11 @@ var Animation = function (animArr) {
         };
         break;
       default: func = function (id, cb) {
-        $('div#' + id).show(0);
-        if (typeof cb === 'function') {
-          cb();
-        }
+        $('div#' + id).show(0, function () {
+          if (typeof cb === 'function') {
+            cb();
+          }
+        });
       };
     }
 
@@ -43,26 +45,33 @@ var Animation = function (animArr) {
   }
 
   function prepAnimationLoaderOptions() {
-    var animationLoaderOptions = [];
+    var animationLoaderOptions = {
+      click: false,
+      animations: []
+    };
 
-    animArr.forEach(function (options) {
-      animationLoaderOptions.push({
-        'imagesrc': options.imagesrc,
+    if (options.click) {
+      animationLoaderOptions.click = true;
+    }
+
+    animArr.forEach(function (animation) {
+      animationLoaderOptions.animations.push({
+        'imagesrc': animation.imagesrc,
         'getCssProps': function (zIndex) {
           var props = {
-            'background-image': 'url(' + options.imagesrc + ')',
-            'background-size': options.width + 'px ' + options.height + 'px',
+            'background-image': 'url(' + animation.imagesrc + ')',
+            'background-size': animation.width + 'px ' + animation.height + 'px',
             'background-repeat': 'no-repeat',
             'position': 'absolute',
-            'width': options.width,
-            'height': options.height,
-            'top': options.position.y,
-            'left': options.position.x,
+            'width': animation.width,
+            'height': animation.height,
+            'top': animation.position.y,
+            'left': animation.position.x,
             'zIndex': zIndex,
             'display': 'none'
           };
 
-          switch (options.type) {
+          switch (animation.type) {
             case 'fadeIn':
               break;
             case 'reveal':
@@ -74,53 +83,28 @@ var Animation = function (animArr) {
           return props;
         },
         'id': guid(),
-        'animation': setAnimationFunc(options, this.id),
-        'click': !!options.click,
-        'delay': (typeof options.delay === 'number') ? options.delay : 0
+        'animation': setAnimationFunc(animation, this.id),
+        'delay': (typeof animation.delay === 'number') ? animation.delay : 0
       });
     });
     return animationLoaderOptions;
   }
 
-    // 'imagesrc': options.imagesrc,
-    // 'getCssProps': function (zIndex) {
-    //   var props = {
-    //     'background-image': 'url(' + options.imagesrc + ')',
-    //     'background-size': options.width + 'px ' + options.height + 'px',
-    //     'background-repeat': 'no-repeat',
-    //     'position': 'absolute',
-    //     'width': options.width,
-    //     'height': options.height,
-    //     'top': options.position.y,
-    //     'left': options.position.x,
-    //     'zIndex': zIndex,
-    //     'display': 'none'
-    //   };
-
-    //   switch (options.type) {
-    //     case 'fadeIn':
-    //       break;
-    //     case 'reveal':
-    //       props['width'] = 0;
-    //       break;
-    //     default:
-    //   }
-
-    //   return props;
-    // },
-    // 'getId': function () {
-    //   return id;
-    // },
-
-    // 'click': !!options.click,
-    // 'delay': (typeof options.delay === 'number') ? options.delay : 0
-
-    return prepAnimationLoaderOptions();
+  return prepAnimationLoaderOptions();
 }
 
 var AnimationLoader = function (selector, options) {
-  var index = 0,
-    listenerEl;
+  var index = 0
+  var containerEl = document.createElement('DIV');
+  var event = new Event('animationdone');
+
+  containerEl.id = options.id;
+
+  $(containerEl).css({
+    'position': 'relative',
+    'width': options.width,
+    'height': options.height
+  });
 
   // generates and appends the HTML
 
@@ -131,12 +115,13 @@ var AnimationLoader = function (selector, options) {
           images = [],
           that = this;
 
-      options.animations.forEach(function (animation) {
-        animation.forEach(function (image) {
+      options.animationSets.forEach(function (set) {
+        set.animations.forEach(function (image) {
           images.push(image.imagesrc);
         })
       });
 
+      that.appendHTML();
       for (var i = 0; i < images.length; i++) {
         var image = new Image();
 
@@ -145,7 +130,6 @@ var AnimationLoader = function (selector, options) {
           loaded++;
 
           if (loaded === images.length) {
-            that.appendHTML();
             that.startAnimation();
           } else {
             // console.log(loaded + '/' + totalImages);
@@ -157,74 +141,61 @@ var AnimationLoader = function (selector, options) {
 
     },
     'appendHTML': function () {
-      var containerEl = document.createElement('DIV');
-
-      containerEl.id = options.id;
-
-      listeningEl = containerEl;
-
-      $(containerEl).css({
-        'position': 'relative',
-        'width': options.width,
-        'height': options.height
-      });
-
-      options.animations.forEach(function (animation, zIndex) {
+      options.animationSets.forEach(function (set, zIndex) {
         var className = 'animation-group-' + (zIndex + 1);
 
-        animation.forEach(function (part) {
+        set.animations.forEach(function (animation) {
           var div = document.createElement('DIV');
 
-          div.id = part.id;
+          div.id = animation.id;
           div.className = className;
-          $(div).css(part.getCssProps(zIndex));
+          $(div).css(animation.getCssProps(zIndex));
           $(containerEl).append(div);
         });
       });
 
       $(selector).append(containerEl);
     },
-    'startAnimation': function () {
-      var event = new Event('animationdone'),
-        currentSet = options.animations[0].length,
-        currentSetOfAnimationsComplete = 0;
+    'startAnimation': function (index = 0) {
+      var currentSetLength,
+        animationsCompleteInCurrentSet = 0,
+        that = this;
 
-      // if (!options.animations[index]) {
-      //   return;
-      // }
+      if (typeof options.animationSets[index] === 'undefined') {
+        return;
+      }
 
-      // // wait for click or keep running?
-      // if (options.animations[index].click) {
-      //   $('#' + options.id).on('click', function () {
-      //     // remove click handler immediately, then run animation
-      //     $('#' + options.id).off('click');
-      //     options.animations[index].animation(function () {
-      //       // runs next animation when the current one ends
-      //       // console.log('done');
-      //       options.animations[index++];
-      //       startAnimation();
-      //     });
-      //   });
-      // }
-      // else {
-      //   setTimeout(function () {
-      //     options.animations[index].animation(function () {
-      //       // console.log('done');
-      //       options.animations[index++];
-      //       startAnimation();
-      //     });
-      //   }, options.animations[index].delay);
-      // }
-      console.dir(options);
-      // run first set of animations - options.animations[0].forEach()
-      // each animation in the set should fire an event like animationdone
-      // keep a counter of how many time animationdone was fired. If it equals the number of animations in the set,
+      currentSetLength = options.animationSets[index].animations.length;
+
+      // run first set of animations
+      // when an animation in the set is done, iterate the counter
+      // when counter equals the length of the animations in the set
       // run the next set
-      listenerEl.addEventListener('animationdone', function () {
-        if (currentSetOfAnimationsComplete === currentSet) {
-          // currentSet = options.animations
+      function handleAnimationDone() {
+        animationsCompleteInCurrentSet++;
+        if (animationsCompleteInCurrentSet === currentSetLength) {
+          that.startAnimation(++index);
         }
-      })
+      }
+
+      function runAnimationSet () {
+        options.animationSets[index].animations.forEach(function (a) {
+          setTimeout(function () {
+            a.animation(a.id, handleAnimationDone);
+          }, a.delay);
+        });
+      }
+
+      // wait for click or keep running?
+      if (options.animationSets[index].click) {
+        $('#' + options.id).on('click', function () {
+          // remove click handler immediately, then run animation
+          $('#' + options.id).off('click');
+          runAnimationSet();
+        });
+      } else {
+        runAnimationSet();
+      }
     },
     'clickAnimation': function () {
       var busy = false;
