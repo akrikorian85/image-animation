@@ -32,6 +32,39 @@ var Animation = function (options, animArr) {
           });
         };
         break;
+      // case 'fadeInAndOut':
+      //   if (typeof animation.fadeInDuration !== 'number' &&
+      //       typeof animation.fadeOutDuration !== 'number' &&
+      //       typeof animation.durationToShow !== 'number') {
+      //         throw 'Error: Missing fadeInAndOut arguments. Need to set fadeInDuration, fadeOutDuration, and durationToShow to integer milliseconds';
+      //   }
+      //   func = function (id, cb) {
+      //     $('div#' + id).fadeIn(animation.fadeInDuration, function () {
+      //       setTimeout(function () {
+      //         $('div#' + id).fadeOut(animation.fadeOutDuration, function () {
+      //           if (typeof cb === 'function') {
+      //             cb();
+      //           }
+      //         });
+      //       }, animation.durationToShow)
+      //     });
+      //   };
+      //   break;
+      case 'fadeInThenOutOnClick':
+        func = function (id, cb) {
+          $('div#' + id).fadeIn(animation.duration, function () {
+            $('div#' + id).parent().click(function () {
+              $(this).off('click');
+              if (typeof cb === 'function') {
+                cb();
+              }
+              $('div#' + id).fadeOut(animation.duration, function () {
+
+              });
+            });
+          })
+        }
+        break;
       default: func = function (id, cb) {
         $('div#' + id).show(0, function () {
           if (typeof cb === 'function') {
@@ -96,7 +129,6 @@ var Animation = function (options, animArr) {
 var AnimationLoader = function (selector, options) {
   var index = 0
   var containerEl = document.createElement('DIV');
-  var event = new Event('animationdone');
 
   containerEl.id = options.id;
 
@@ -106,8 +138,6 @@ var AnimationLoader = function (selector, options) {
     'height': options.height
   });
 
-  // generates and appends the HTML
-
   return {
     // initializer
     'init': function () {
@@ -116,12 +146,13 @@ var AnimationLoader = function (selector, options) {
           that = this;
 
       options.animationSets.forEach(function (set) {
-        set.animations.forEach(function (image) {
-          images.push(image.imagesrc);
+        set.animations.forEach(function (animation) {
+          images.push(animation.imagesrc);
         })
       });
 
       that.appendHTML();
+
       for (var i = 0; i < images.length; i++) {
         var image = new Image();
 
@@ -196,27 +227,6 @@ var AnimationLoader = function (selector, options) {
       } else {
         runAnimationSet();
       }
-    },
-    'clickAnimation': function () {
-      var busy = false;
-
-      $('#' + options.id).on('click', function (e) {
-        e.preventDefault();
-
-        if (busy) {
-          // console.log('busy...');
-          return;
-        }
-
-        if (options.animations[index]) {
-          // console.log(index);
-          busy = true;
-          options.animations[index].animation(function () {
-            index++;
-            busy = false;
-          });
-        }
-      });
     }
   }
 };
