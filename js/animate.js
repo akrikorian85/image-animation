@@ -1,6 +1,4 @@
-var Animation = function (options) {
-  var id = guid();
-
+var Animation = function (animArr) {
   // helper function to set the id of each image
   function guid() {
     function s4() {
@@ -11,173 +9,219 @@ var Animation = function (options) {
     return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
       s4() + '-' + s4() + s4() + s4();
   }
-  function setAnimationFunc() {
-    switch (options.type) {
+  function setAnimationFunc(animation) {
+    var func;
+
+    switch (animation.type) {
       case 'fadeIn':
-        return function (cb) {
-          $('div#' + id).fadeIn(options.duration, function () {
-            if (typeof cb === 'function') {
-              cb();
-            }
-          });
+        func = function (id) {
+          $('div#' + id).fadeIn(animation.duration);
         };
+        break;
       case 'reveal':
-        return function (cb) {
+        func = function (id) {
           $('div#' + id).show();
-          $('div#' + id).animate({'width': options.width}, options.duration, function () {
-            if (typeof cb === 'function') {
-              cb();
-            }
-          });
+          $('div#' + id).animate({'width': animation.width}, animation.duration);
         };
-      default: return function (cb) {
-        $('div#' + id).show(0, function () {
-          if (typeof cb === 'function') {
-            cb();
-          }
-        });
-      }
-    }
-  }
-  return {
-    'imagesrc': options.imagesrc,
-    'getCssProps': function (zIndex) {
-      var props = {
-        'background-image': 'url(' + options.imagesrc + ')',
-        'background-size': options.width + 'px ' + options.height + 'px',
-        'background-repeat': 'no-repeat',
-        'position': 'absolute',
-        'width': options.width,
-        'height': options.height,
-        'top': options.position.y,
-        'left': options.position.x,
-        'zIndex': zIndex,
-        'display': 'none'
+        break;
+      default: func = function (id) {
+        $('div#' + id).show(0);
       };
+    }
 
-      switch (options.type) {
-        case 'fadeIn':
-          break;
-        case 'reveal':
-          props['width'] = 0;
-          break;
-        default:
-      }
+    return func;
+  }
 
-      return props;
-    },
-    'getId': function () {
-      return id;
-    },
-    'animation': setAnimationFunc(),
-    'click': !!options.click,
-    'delay': (typeof options.delay === 'number') ? options.delay : 0
-  };
+  function prepAnimationLoaderOptions() {
+    var animationLoaderOptions = [];
+
+    animArr.forEach(function (options) {
+      animationLoaderOptions.push({
+        'imagesrc': options.imagesrc,
+        'getCssProps': function (zIndex) {
+          var props = {
+            'background-image': 'url(' + options.imagesrc + ')',
+            'background-size': options.width + 'px ' + options.height + 'px',
+            'background-repeat': 'no-repeat',
+            'position': 'absolute',
+            'width': options.width,
+            'height': options.height,
+            'top': options.position.y,
+            'left': options.position.x,
+            'zIndex': zIndex,
+            'display': 'none'
+          };
+
+          switch (options.type) {
+            case 'fadeIn':
+              break;
+            case 'reveal':
+              props['width'] = 0;
+              break;
+            default:
+          }
+
+          return props;
+        },
+        'id': guid(),
+        'animation': setAnimationFunc(options, this.id),
+        'click': !!options.click,
+        'delay': (typeof options.delay === 'number') ? options.delay : 0
+      });
+    });
+    return animationLoaderOptions;
+  }
+
+    // 'imagesrc': options.imagesrc,
+    // 'getCssProps': function (zIndex) {
+    //   var props = {
+    //     'background-image': 'url(' + options.imagesrc + ')',
+    //     'background-size': options.width + 'px ' + options.height + 'px',
+    //     'background-repeat': 'no-repeat',
+    //     'position': 'absolute',
+    //     'width': options.width,
+    //     'height': options.height,
+    //     'top': options.position.y,
+    //     'left': options.position.x,
+    //     'zIndex': zIndex,
+    //     'display': 'none'
+    //   };
+
+    //   switch (options.type) {
+    //     case 'fadeIn':
+    //       break;
+    //     case 'reveal':
+    //       props['width'] = 0;
+    //       break;
+    //     default:
+    //   }
+
+    //   return props;
+    // },
+    // 'getId': function () {
+    //   return id;
+    // },
+
+    // 'click': !!options.click,
+    // 'delay': (typeof options.delay === 'number') ? options.delay : 0
+
+    return prepAnimationLoaderOptions();
 }
 
 var AnimationLoader = function (selector, options) {
   var index = 0;
 
   // generates and appends the HTML
-  function appendHTML() {
-    var containerEl = document.createElement('DIV');
 
-    containerEl.id = options.id;
-
-    $(containerEl).css({
-      'position': 'relative',
-      'width': options.width,
-      'height': options.height
-    });
-
-    options.animations.forEach(function (animation, index) {
-      var div = document.createElement('DIV'),
-        zIndex = index;
-
-      div.id = animation.getId();
-      $(div).css(animation.getCssProps(zIndex));
-      $(containerEl).append(div);
-    });
-
-    $(selector).append(containerEl);
-  }
-
-  var startAnimation = function () {
-    if (!options.animations[index]) {
-      return;
-    }
-
-    // wait for click or keep running?
-    if (options.animations[index].click) {
-      $('#' + options.id).on('click', function () {
-        // remove click handler immediately, then run animation
-        $('#' + options.id).off('click');
-        options.animations[index].animation(function () {
-          // runs next animation when the current one ends
-          // console.log('done');
-          options.animations[index++];
-          startAnimation();
-        });
-      });
-    }
-    else {
-      setTimeout(function () {
-        options.animations[index].animation(function () {
-          // console.log('done');
-          options.animations[index++];
-          startAnimation();
-        });
-      }, options.animations[index].delay);
-    }
-  };
-
-  var clickAnimation = function () {
-    var busy = false;
-
-    $('#' + options.id).on('click', function (e) {
-      e.preventDefault();
-
-      if (busy) {
-        // console.log('busy...');
-        return;
-      }
-
-      if (options.animations[index]) {
-        // console.log(index);
-        busy = true;
-        options.animations[index].animation(function () {
-          index++;
-          busy = false;
-        });
-      }
-    });
-  };
   return {
     // initializer
     'init': function () {
       var loaded = 0,
-          totalImages = options.animations.length;
+          images = [],
+          that = this;
 
-      for (var i = 0; i < totalImages; i++) {
+      options.animations.forEach(function (animation) {
+        animation.forEach(function (image) {
+          images.push(image.imagesrc);
+        })
+      });
+
+      for (var i = 0; i < images.length; i++) {
         var image = new Image();
 
         // preload images
         image.addEventListener('load', function () {
           loaded++;
 
-          if (loaded === totalImages) {
-            appendHTML();
-            startAnimation();
+          if (loaded === images.length) {
+            that.appendHTML();
+            that.startAnimation();
           } else {
             // console.log(loaded + '/' + totalImages);
           }
         });
 
-        image.src = options.animations[i].imagesrc;
+        image.src = images[i];
       }
+    },
+    'appendHTML': function () {
+      var containerEl = document.createElement('DIV');
+
+      containerEl.id = options.id;
+
+      $(containerEl).css({
+        'position': 'relative',
+        'width': options.width,
+        'height': options.height
+      });
+
+      options.animations.forEach(function (animation, zIndex) {
+        var className = 'animation-group-' + (zIndex + 1);
+
+        animation.forEach(function (part) {
+          var div = document.createElement('DIV');
+
+          div.id = part.id;
+          div.className = className;
+          $(div).css(part.getCssProps(zIndex));
+          $(containerEl).append(div);
+        });
+      });
+
+      $(selector).append(containerEl);
+    },
+    'startAnimation': function () {
+      // if (!options.animations[index]) {
+      //   return;
+      // }
+
+      // // wait for click or keep running?
+      // if (options.animations[index].click) {
+      //   $('#' + options.id).on('click', function () {
+      //     // remove click handler immediately, then run animation
+      //     $('#' + options.id).off('click');
+      //     options.animations[index].animation(function () {
+      //       // runs next animation when the current one ends
+      //       // console.log('done');
+      //       options.animations[index++];
+      //       startAnimation();
+      //     });
+      //   });
+      // }
+      // else {
+      //   setTimeout(function () {
+      //     options.animations[index].animation(function () {
+      //       // console.log('done');
+      //       options.animations[index++];
+      //       startAnimation();
+      //     });
+      //   }, options.animations[index].delay);
+      // }
       console.dir(options);
+      console.dir($('.animation-group-1'));
+    },
+    'clickAnimation': function () {
+      var busy = false;
+
+      $('#' + options.id).on('click', function (e) {
+        e.preventDefault();
+
+        if (busy) {
+          // console.log('busy...');
+          return;
+        }
+
+        if (options.animations[index]) {
+          // console.log(index);
+          busy = true;
+          options.animations[index].animation(function () {
+            index++;
+            busy = false;
+          });
+        }
+      });
     }
-  };
+  }
 };
 
 
