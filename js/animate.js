@@ -1,4 +1,4 @@
-var Animation = function (options, animArr) {
+var Animation = function (animArr, click = false) {
   // helper function to set the id of each image
   function guid() {
     function s4() {
@@ -15,62 +15,22 @@ var Animation = function (options, animArr) {
     switch (animation.type) {
       case 'fadeIn':
         func = function (id, cb) {
-          $('div#' + id).fadeIn(animation.duration, function () {
-            if (typeof cb === 'function') {
-              cb();
-            }
-          });
+          $('div#' + id).fadeIn(animation.duration, cb);
         };
         break;
       case 'reveal':
         func = function (id, cb) {
           $('div#' + id).show();
-          $('div#' + id).animate({'width': animation.width}, animation.duration, function () {
-            if (typeof cb === 'function') {
-              cb();
-            }
-          });
+          $('div#' + id).animate({'width': animation.width}, animation.duration, cb);
         };
         break;
-      // case 'fadeInAndOut':
-      //   if (typeof animation.fadeInDuration !== 'number' &&
-      //       typeof animation.fadeOutDuration !== 'number' &&
-      //       typeof animation.durationToShow !== 'number') {
-      //         throw 'Error: Missing fadeInAndOut arguments. Need to set fadeInDuration, fadeOutDuration, and durationToShow to integer milliseconds';
-      //   }
-      //   func = function (id, cb) {
-      //     $('div#' + id).fadeIn(animation.fadeInDuration, function () {
-      //       setTimeout(function () {
-      //         $('div#' + id).fadeOut(animation.fadeOutDuration, function () {
-      //           if (typeof cb === 'function') {
-      //             cb();
-      //           }
-      //         });
-      //       }, animation.durationToShow)
-      //     });
-      //   };
-      //   break;
-      case 'fadeInThenOutOnClick':
+      case 'fadeOut':
         func = function (id, cb) {
-          $('div#' + id).fadeIn(animation.duration, function () {
-            $('div#' + id).parent().click(function () {
-              $(this).off('click');
-              if (typeof cb === 'function') {
-                cb();
-              }
-              $('div#' + id).fadeOut(animation.duration, function () {
-
-              });
-            });
-          })
-        }
+          $('div#' + id).fadeOut(animation.duration, cb);
+        };
         break;
       default: func = function (id, cb) {
-        $('div#' + id).show(0, function () {
-          if (typeof cb === 'function') {
-            cb();
-          }
-        });
+        $('div#' + id).show(0, cb);
       };
     }
 
@@ -79,15 +39,24 @@ var Animation = function (options, animArr) {
 
   function prepAnimationLoaderOptions() {
     var animationLoaderOptions = {
-      click: false,
+      click: click,
       animations: []
     };
 
-    if (options.click) {
-      animationLoaderOptions.click = true;
-    }
-
     animArr.forEach(function (animation) {
+      // set Id to imagesrc on this type to initiate animations on previously animated elements. Need to think of a better way
+      if (animation.type === 'fadeOut') {
+        if (typeof animation.id === 'undefined') {
+          throw 'Error: id of animation type "fadeOut" missing';
+        }
+        animationLoaderOptions.animations.push({
+          'animation': setAnimationFunc(animation),
+          'delay': (typeof animation.delay === 'number') ? animation.delay : 0,
+          'type': (animation.type) ? animation.type : '',
+          'id': animation.id
+        });
+        return;
+      }
       animationLoaderOptions.animations.push({
         'imagesrc': animation.imagesrc,
         'getCssProps': function (zIndex) {
@@ -115,9 +84,10 @@ var Animation = function (options, animArr) {
 
           return props;
         },
-        'id': guid(),
-        'animation': setAnimationFunc(animation, this.id),
-        'delay': (typeof animation.delay === 'number') ? animation.delay : 0
+        'id': (typeof animation.id !== 'undefined' && animation.id !== '') ? animation.id : guid(),
+        'animation': setAnimationFunc(animation),
+        'delay': (typeof animation.delay === 'number') ? animation.delay : 0,
+        'type': (animation.type) ? animation.type : ''
       });
     });
     return animationLoaderOptions;
@@ -147,7 +117,9 @@ var AnimationLoader = function (selector, options) {
 
       options.animationSets.forEach(function (set) {
         set.animations.forEach(function (animation) {
-          images.push(animation.imagesrc);
+          if (animation.imagesrc) {
+            images.push(animation.imagesrc);
+          }
         })
       });
 
@@ -177,6 +149,8 @@ var AnimationLoader = function (selector, options) {
 
         set.animations.forEach(function (animation) {
           var div = document.createElement('DIV');
+
+          if (animation.type === 'fadeOut') return;
 
           div.id = animation.id;
           div.className = className;
